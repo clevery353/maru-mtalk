@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chatmember">
+	<insert id="chatmemberInsert" parameterType="chatMemberVO" >
+		INSERT INTO CHATMEMBER
+			(  CHATROOM_ID, MEM_ID, CHATMEMBER_ENTERED  )
+		VALUES
+			( #{chatroom_id}, #{mem_id}, SYSDATE() )
+	</insert>
+	<select id="chatmemberSelectList" parameterType="chatMemberVO" resultType="String">
+		SELECT A.CHATROOM_ID
+		FROM CHATMEMBER A JOIN CHATMEMBER B 
+		ON A.CHATROOM_ID = B.CHATROOM_ID
+		WHERE A.MEM_ID = #{mem_id}
+		AND B.MEM_ID = #{second_id}
+	</select>
+	<select id="chatmemberSum" parameterType="String" resultType="String">
+		SELECT COUNT(*) FROM CHATMEMBER WHERE CHATROOM_ID = #{chatroom_id}
+	</select>
+	<select id="chatmemberList" parameterType="String" resultType="String">
+		SELECT MEM_ID
+		FROM CHATMEMBER
+		WHERE CHATROOM_ID = #{chatroom_id}
+	</select>
+	<select id="chatroomRenameData" parameterType="String" resultType="String">
+		SELECT M.MEM_NAME
+		FROM CHATMEMBER C JOIN MEMBER M
+		ON C.MEM_ID = M.MEM_ID
+		WHERE CHATROOM_ID = #{chatroom_id}
+	</select>
+	<delete id="chatroomOut" parameterType="chatMemberVO">
+		DELETE FROM chatmember 
+		WHERE  CHATROOM_ID=#{chatroom_id} AND MEM_ID=#{mem_id}
+	</delete>
+	<!-- 0718 소은추가 -->
+	<select id="chatBelongMember" parameterType="String" resultType="chatMemberVO">
+		SELECT CHATROOM_ID, MEM_ID
+		FROM CHATMEMBER
+		WHERE MEM_ID = #{mem_id}
+	</select>
+	<!-- 0719 소은추가 -->
+	<select id="myChatroomName" parameterType="chatMemberVO" resultType="chatMemberVO">
+		SELECT CHATROOM_ID, MEM_ID, CHATROOM_NAME
+		FROM CHATMEMBER
+		WHERE MEM_ID = #{mem_id}
+		AND CHATROOM_ID = #{chatroom_id}
+	</select>
+	<!-- 0719 소은추가 -->
+	<update id="chatEditName" parameterType="chatMemberVO">
+		UPDATE CHATMEMBER 
+		SET CHATROOM_NAME = #{chatroom_name} 
+		WHERE CHATROOM_ID = #{chatroom_id}
+		AND MEM_ID = #{mem_id}
+	</update>
+	<!-- 0722 소은추가 -->
+	<select id="selectChatEntered" parameterType="chatMemberVO" resultType="chatMemberVO">
+		SELECT CHATMEMBER_ENTERED
+		FROM CHATMEMBER 
+		WHERE MEM_ID = #{mem_id}
+		AND CHATROOM_ID = #{chatroom_id}
+	</select>
+	<!-- 0720 소은추가 -->
+	<update id="chatmemberEnteredUpdate" parameterType="chatMemberVO">
+		UPDATE CHATMEMBER 
+		SET CHATMEMBER_ENTERED = SYSDATE() 
+		WHERE CHATROOM_ID = #{chatroom_id}
+		AND MEM_ID = #{mem_id}
+	</update>
+	<!-- 0723 문경 추가 채팅방 이름 변경시 참여 인원 정보 가져옴. -->
+	<select id = "ChatIdMemberCount" parameterType = "int" resultType = "int">
+		SELECT COUNT(MEM_ID)FROM CHATMEMBER WHERE CHATROOM_ID = #{chatroom_id}
+	</select>
+	<!-- 0723 문경 추가 사용자가 이름을 변경했을 시, 사용자가 속해있는 채팅방 이름 전부 가져옴 -->
+	<select id = "ChatMemNameUpdate" parameterType = "String" resultType = "chatRoomVO">
+		SELECT 
+		R.CHATROOM_ID AS CHATROOM_ID,
+		R.CHATROOM_NAME AS CHATROOM_NAME,
+		R.MEM_ID AS MEM_ID
+		FROM CHATMEMBER M INNER JOIN CHATROOM R ON M.CHATROOM_ID = R.CHATROOM_ID
+		WHERE M.MEM_ID = #{mem_id}
+	</select>
+</mapper>

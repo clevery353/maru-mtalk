@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="group">
+	<select id="selectGroupList" parameterType="String" resultType="friendGroupVO">
+		SELECT FRIENDGROUP_NAME, FRIENDGROUP_ID
+		FROM FRIENDGROUP
+		WHERE FRIENDGROUP_MEMBER = #{friendgroup_member}
+		ORDER BY FRIENDGROUP_NAME
+	</select>
+	<insert id="insertGroup" parameterType="friendGroupVO">
+		INSERT INTO FRIENDGROUP (
+			FRIENDGROUP_ID,
+			FRIENDGROUP_NAME,
+			FRIENDGROUP_MEMBER
+		) VALUES (
+			NEXTVAL(FRIENDGROUP_SEQ),
+			#{friendGroup_name},
+			#{friendGroup_member}
+		)
+	</insert>
+	<update id="editName" parameterType="friendGroupVO">
+		UPDATE FRIENDGROUP 
+		SET 
+		FRIENDGROUP_NAME = #{friendGroup_name}  
+		WHERE FRIENDGROUP_ID = #{friendGroup_id}
+	</update>
+	
+	<delete id="deleteGroup" parameterType="friendGroupVO">
+		DELETE FROM FRIENDGROUP
+		WHERE FRIENDGROUP_ID = #{friendGroup_id}
+	</delete>
+	
+	<select id="checkGroupDuplication" parameterType="friendGroupVO" resultType="int">
+		SELECT COUNT(FRIENDGROUP_ID)
+		FROM FRIENDGROUP
+		WHERE FRIENDGROUP_MEMBER = #{friendGroup_member}
+		AND FRIENDGROUP_NAME = #{friendGroup_name}  
+	</select>
+</mapper>

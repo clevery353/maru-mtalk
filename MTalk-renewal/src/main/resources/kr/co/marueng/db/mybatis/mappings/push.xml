@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="push">
+	<insert id = "push_input" parameterType = "pushVO" >
+		INSERT INTO PUSH VALUES(NEXTVAL(PUSH_SEQ),#{push_mem},#{push_type},#{push_status},SYSDATE())
+	</insert>
+	
+	<select id = "push_get" parameterType = "String" resultType = "pushVO">
+		SELECT PUSH_MEM, PUSH_TYPE, PUSH_STATUS, PUSH_DATE FROM PUSH WHERE PUSH_MEM = #{push_mem}
+	</select>
+	
+	<update id = "push_confirm" parameterType = "String">
+		UPDATE PUSH SET PUSH_STATUS = 'Y' WHERE PUSH_MEM = #{push_mem}
+	</update>
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="notice">
+	<sql id="searchFrag">
+		<where>
+		<if test="searchVO != null">
+			<if test="searchVO.noti_title != null">
+				NOTI_TITLE LIKE '%'+#{searchVO.noti_title}+'%'
+			</if>
+			<if test="searchVO.noti_text != null">
+				NOTI_TEXT LIKE '%'+#{searchVO.noti_text}+'%'
+			</if>
+		</if>
+		</where>
+	</sql>
+
+
+
+	<select id="selectNoticeCount" parameterType="pagingVO" resultType="int">
+		SELECT COUNT(NOTI_ID)
+		FROM NOTICE
+		<include refid="notice.searchFrag"/>
+	</select>
+	
+	<select id="selectNoticeList" parameterType="pagingVO" resultType="noticeVO">
+		SELECT B.*
+		FROM
+			(SELECT @rownum:=@rownum+1 as RNUM, A.*
+				FROM(
+					SELECT NOTI_ID, NOTI_WRITER, NOTI_TITLE,
+					NOTI_DATE, NOTI_TEXT
+					FROM NOTICE
+					<include refid="notice.searchFrag"/>
+					ORDER BY NOTI_ID DESC
+					LIMIT 999999999
+				)A,
+			(SELECT @rownum:=0)r ) B
+		<![CDATA[
+		WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+		]]>
+	</select>
+	<!-- 0722 소은추가 -->
+	<select id="selectNoticeBiggerOne" resultType="noticeVO">
+		SELECT NOTI_ID, NOTI_WRITER, NOTI_TITLE, NOTI_DATE, NOTI_TEXT
+		FROM NOTICE
+		ORDER BY NOTI_ID DESC LIMIT 1
+	</select>
+	
+	<select id="selectNotice" parameterType="String" resultType="noticeVO">
+		SELECT NOTI_ID, NOTI_WRITER, NOTI_TITLE, NOTI_DATE, NOTI_TEXT
+		FROM NOTICE
+		WHERE NOTI_ID = #{noti_id}	
+	</select>
+	
+	<insert id="insertNotice" parameterType="noticeVO">
+		INSERT INTO NOTICE (
+			NOTI_ID,
+			NOTI_WRITER,
+			NOTI_TITLE,
+			NOTI_DATE,
+			NOTI_TEXT
+		) VALUES (
+			NEXTVAL(NOTICE_SEQ),
+			#{noti_writer},
+			#{noti_title},
+			NOW(),
+			#{noti_text}
+		)
+	</insert>
+	
+	<delete id="deleteNotice" parameterType="String">
+		DELETE FROM NOTICE
+		WHERE NOTI_ID = #{noti_id}
+	</delete>
+	
+	<update id="updateNotice" parameterType="noticeVO">
+		UPDATE NOTICE
+		    SET
+			    NOTI_TITLE = #{noti_title},
+			    NOTI_TEXT = #{noti_text}
+		WHERE 
+			NOTI_ID = #{noti_id}
+	</update>
+</mapper>
+
+
+
+
+
+
+
+
+

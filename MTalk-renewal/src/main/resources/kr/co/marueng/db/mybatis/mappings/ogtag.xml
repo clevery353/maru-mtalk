@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ogtag">
+	<select id="selectOgtag" parameterType="String" resultType="ogtagVO">
+		SELECT DISTINCT OGTAG_ID, OGTAG_TITLE, OGTAG_URL, 
+				  OGTAG_DESCRIPTION, OGTAG_IMAGE, OGTAG_INPUTURL
+		FROM OGTAG
+		WHERE OGTAG_INPUTURL = #{ogtag_inputurl}
+		OR OGTAG_URL = #{ogtag_inputurl}
+		LIMIT 1
+	</select>
+	<insert id="insertOgtag" parameterType="ogtagVO">
+		INSERT INTO OGTAG (OGTAG_TITLE, OGTAG_URL, OGTAG_DESCRIPTION, OGTAG_IMAGE, OGTAG_INPUTURL) 
+		VALUES (#{ogtag_title}, #{ogtag_url}, #{ogtag_description}, #{ogtag_image}, #{ogtag_inputurl})
+	</insert>
+</mapper>

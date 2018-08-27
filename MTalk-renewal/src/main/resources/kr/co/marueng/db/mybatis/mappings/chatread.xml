@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chatread">
+	<insert id="chatreadInsert" parameterType="chatReadVO" >
+		INSERT INTO CHATREAD (
+			CHATROOM_ID,
+			MEM_ID,
+			CHATREAD_DATE
+		) VALUES (
+			#{chatroom_id},
+			#{mem_id},
+			SYSDATE()
+		)
+	</insert>
+	<update id="chatreadUpdate" parameterType="chatReadVO">
+		UPDATE CHATREAD
+		SET CHATREAD_DATE = SYSDATE()
+		WHERE CHATROOM_ID = #{chatroom_id}
+		AND MEM_ID = #{mem_id}
+	</update>
+	<select id="chatreadDate" parameterType="String" resultType="chatReadVO">
+		SELECT MEM_ID, CHATREAD_DATE
+		FROM CHATREAD
+		WHERE CHATROOM_ID = #{chatroom_id}
+	</select>
+	<select id="myReadList" parameterType="String" resultType="chatReadVO">
+		SELECT CHATROOM_ID, CHATREAD_DATE
+		FROM CHATREAD
+		WHERE MEM_ID = #{mem_id}
+	</select>
+	<select id="myLastReadDate" parameterType="String" resultType="String">
+		SELECT CHATREAD_DATE
+		FROM CHATREAD
+		WHERE MEM_ID = #{mem_id}
+		ORDER BY CHATREAD_DATE DESC LIMIT 1;
+	</select>
+	<delete id="chatreadDelete" parameterType="chatReadVO">
+		DELETE FROM CHATREAD
+		WHERE CHATROOM_ID = #{chatroom_id}
+		AND MEM_ID = #{mem_id}
+	</delete>
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <typeAliases>
+        <package name="kr.co.marueng.db.mybatis"/>
+    </typeAliases>
+    <mappers>
+        <mapper resource="mappings/chatattach.xml"/>
+        <mapper resource="mappings/chatbubble.xml"/>
+        <mapper resource="mappings/chatmember.xml"/>
+        <mapper resource="mappings/chatread.xml"/>
+        <mapper resource="mappings/chatroom.xml"/>
+        <mapper resource="mappings/friend.xml"/>
+        <mapper resource="mappings/group.xml"/>
+        <mapper resource="mappings/hit.xml"/>
+        <mapper resource="mappings/member.xml"/>
+        <mapper resource="mappings/notice.xml"/>
+        <mapper resource="mappings/ogtag.xml"/>
+        <mapper resource="mappings/push.xml"/>
+        <mapper resource="mappings/relations.xml"/>
+        <mapper resource="mappings/useData.xml"/>
+    </mappers>
+</configuration>

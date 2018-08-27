@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chatbubble">
+	<insert id="chatbubbleInsert" parameterType="chatBubbleVO">
+		INSERT INTO CHATBUBBLE (
+			CHATBUBBLE_ID, 
+			MEM_ID, 
+			CHATBUBBLE_TEXT, 
+			CHATBUBBLE_DATE, 
+			CHATBUBBLE_ATTACH, 
+			CHATROOM_ID
+		) VALUES (
+			concat(#{chatroom_id}, nextval(chatbubble_seq)),
+			#{mem_id},
+			#{chatbubble_text},
+			SYSDATE(),
+			#{chatbubble_attach},
+			#{chatroom_id}
+		)
+	</insert>
+	
+	<select id="chatroom_allBubble" parameterType="chatMemberVO" resultType="chatBubbleVO">
+		SELECT B.CHATBUBBLE_ID, B.MEM_ID, B.CHATBUBBLE_TEXT, 
+		  		  B.CHATBUBBLE_DATE, B.CHATBUBBLE_ATTACH, B.CHATROOM_ID
+		FROM CHATBUBBLE B JOIN CHATMEMBER M
+		ON B.CHATROOM_ID = M.CHATROOM_ID
+		WHERE B.CHATROOM_ID = #{chatroom_id}
+		AND M.MEM_ID = #{mem_id}
+		AND M.CHATMEMBER_ENTERED <![CDATA[ <= ]]> B.CHATBUBBLE_DATE
+		ORDER BY CHATBUBBLE_DATE
+	</select>
+	<select id="last_chat" parameterType="String" resultType="chatBubbleVO">
+		SELECT CHATBUBBLE_ID, MEM_ID, CHATBUBBLE_TEXT, 
+					  CHATBUBBLE_DATE, CHATBUBBLE_ATTACH, CHATROOM_ID
+		FROM CHATBUBBLE
+		WHERE CHATROOM_ID = #{chatroom_id}
+		ORDER BY CHATBUBBLE_DATE DESC LIMIT 1
+	</select>
+	<select id="currentBubble" parameterType="chatReadVO" resultType="String">
+		SELECT CHATBUBBLE_ID
+		FROM CHATBUBBLE
+		WHERE MEM_ID = #{mem_id}
+		AND CHATROOM_ID = #{chatroom_id}
+		ORDER BY CHATBUBBLE_ID DESC LIMIT 1
+	</select>
+	<select id="myRoomLastChatDate" parameterType="String" resultType="String">
+		SELECT CHATBUBBLE_DATE
+		FROM CHATBUBBLE
+		WHERE CHATROOM_ID IN (
+			SELECT CHATROOM_ID
+			FROM CHATMEMBER
+			WHERE MEM_ID = #{mem_id}
+			)
+		ORDER BY 1 DESC LIMIT 1
+	</select>
+	<select id="currBubbleGetLastId" parameterType="chatBubbleVO" resultType="String">
+		SELECT CHATBUBBLE_ID
+		FROM CHATBUBBLE
+		WHERE CHATROOM_ID = #{chatroom_id}
+		AND MEM_ID = #{mem_id}
+		ORDER BY CHATBUBBLE_DATE DESC LIMIT 1
+	</select>
+	<delete id="outroom_allBubbleDelete" parameterType="String">
+		DELETE FROM CHATBUBBLE
+		WHERE CHATROOM_ID = #{chatroom_id}
+	</delete>
+	<!-- 소은추가 0720 -->
+	<select id="chatbubbleAllSave" parameterType="chatmemberVO" resultType="chatbubbleVO">
+		SELECT M.MEM_NAME, CONCAT('(', B.MEM_ID, ')') MEM_ID, 
+			B.CHATBUBBLE_DATE, B.CHATBUBBLE_TEXT
+		FROM CHATBUBBLE B JOIN MEMBER M
+		ON B.MEM_ID = M.MEM_ID
+		JOIN CHATMEMBER CM
+		ON CM.CHATROOM_ID = B.CHATROOM_ID
+		WHERE CM.CHATROOM_ID = #{chatroom_id}
+		AND CM.MEM_ID = #{mem_id}
+		AND CM.CHATMEMBER_ENTERED <![CDATA[ <= ]]> B.CHATBUBBLE_DATE
+		ORDER BY CHATBUBBLE_DATE
+	</select>
+</mapper>
+
+
+
+
+

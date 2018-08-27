@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+	<select id="selectMemberName" parameterType="String" resultType="String">
+		SELECT MEM_NAME
+		FROM MEMBER
+		WHERE MEM_ID = #{mem_id}
+	</select>
+	<!-- 0718 소은수정 -->
+	<select id="selectRelationsMember" parameterType="String" resultType="memberVO">
+		SELECT 
+		MEM_ID, MEM_NAME, MEM_PROPIC, MEM_PROTEXT
+		FROM MEMBER
+		WHERE MEM_ID = #{mem_id}
+		AND (MEM_STATUS = 'Y' OR MEM_STATUS = 'y')
+	</select>
+	
+<!-- 	조문경씨 -->
+	<select id = "alertLogin" parameterType = "String" resultType = "friendVO">
+		SELECT FRI_FIRSTMEM,FRI_FRIENDMEM FROM FRIEND WHERE FRI_FIRSTMEM = #{mem_id}
+	</select>
+	<!-- 회원가입 -->
+	<insert id = "memberEnroll" parameterType = "memberVO">
+		INSERT INTO MEMBER( MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL,
+		 MEM_PROPIC, MEM_PROTEXT, MEM_TYPE, MEM_STATUS,MEM_DATE )
+		 VALUES(#{mem_id}, #{mem_pw}, #{mem_name}, #{mem_mail}, 
+		 #{mem_propic}, #{mem_protext}, #{mem_type}, #{mem_status}, SYSDATE())
+	</insert>
+	<insert id = "memberEnroll_friendgroup" parameterType = "String">
+		INSERT INTO FRIENDGROUP VALUES(NEXTVAL(FRIENDGROUP_SEQ),'기본',#{mem_id})
+	</insert>
+	
+	<!-- 로그인 -->
+	<select id = "memberLogin" parameterType = "String" resultType = "memberVO">
+		SELECT MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL,
+		 MEM_PROPIC, MEM_PROTEXT, MEM_TYPE, MEM_STATUS 
+		 FROM MEMBER
+		 WHERE MEM_ID = #{mem_id}
+	</select>
+	
+	<!-- 내정보 변경 -->
+	<update id = "memberInfoUpdate" parameterType = "hashmap">
+		UPDATE MEMBER
+		SET MEM_NAME = #{mem_name}, MEM_PROTEXT = #{mem_protext}
+		WHERE MEM_ID = #{mem_id} 
+	</update>
+	<!-- ID 찾기 -->
+	<select id = "memberIdSearch" parameterType="String" resultType="memberVO">
+		SELECT MEM_ID,MEM_STATUS FROM MEMBER WHERE MEM_MAIL = #{mem_mail} AND MEM_NAME = #{mem_name}
+	</select>
+	<!-- 비밀번호 찾기 -->
+	<select id = "memberPwSearch" parameterType = "hashmap" resultType = "memberVO">
+		SELECT MEM_PW, MEM_STATUS FROM MEMBER WHERE MEM_ID = #{mem_id} AND MEM_MAIL = #{mem_mail}
+	</select>
+	<select id = "MyInfoPwUp" parameterType = "String" resultType = "String">
+		SELECT MEM_PW FROM MEMBER WHERE MEM_ID = #{mem_id}
+	</select>
+	<!-- 비밀번호 변경 -->
+	<update id = "UpdatePw" parameterType = "hashmap">
+		UPDATE MEMBER SET MEM_PW = #{mem_pw} WHERE MEM_ID = #{mem_id}
+	</update>
+	<!-- 이미지 업로드 -->
+	<update id = "imageUpload" parameterType = "java.util.Map">
+		UPDATE MEMBER SET MEM_PROPIC = #{mem_propic} WHERE MEM_ID = #{mem_id}
+	</update>
+	<!-- 회원가입시 중복되는 아이디 있는지 검사 -->
+	<select id = "memberIdCheck" parameterType = "String" resultType = "int">
+		SELECT COUNT(*) FROM MEMBER WHERE MEM_ID = #{mem_id}
+	</select>
+	<!-- 회원탈퇴 -->
+	<update id = "deleteMember" parameterType = "String">
+		UPDATE MEMBER SET MEM_NAME = '(알수없음)', MEM_STATUS = 'd' WHERE MEM_ID = #{mem_id};
+	</update>
+	<!-- 아이디로 이름조회하여 반환 : 0709 소은추가 -->
+	<select id = "memberInfoName" parameterType="String" resultType="String">
+		SELECT MEM_NAME FROM MEMBER WHERE MEM_ID = #{mem_id}
+	</select>
+	
+<!-- 	2018-07-19 곽현호 추가 -->
+<!-- 	회원가입 신청한 사람 목록 조회 -->
+	<select id="selectJoinMemberList" resultType="memberVO">
+		SELECT 
+			MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL, MEM_PROPIC,
+			MEM_PROTEXT, MEM_TYPE, MEM_STATUS, MEM_DATE 
+		FROM MEMBER
+		WHERE MEM_STATUS = 'W'
+	</select>
+<!-- 	이미 가입된 회원 리스트 조회 -->
+	<select id="selectMemberList" resultType="memberVO">
+		SELECT 
+		MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL, MEM_PROPIC,
+		MEM_PROTEXT, MEM_TYPE, MEM_STATUS , MEM_DATE,
+		(SELECT SUM(USE_QTY) FROM USEDATA WHERE USE_MEM = MEM_ID ) as USE_DATA 
+		FROM MEMBER
+		WHERE MEM_STATUS = 'Y'
+		AND MEM_TYPE = '회원'
+	</select>
+<!-- 	회원 가입 승인 -->
+	<update id="approveMember" parameterType="String">
+		UPDATE MEMBER 
+		SET MEM_STATUS = 'Y'
+		WHERE MEM_ID = #{mem_id}
+	</update>
+<!-- 	회원 가입 거절 -->
+	<update id="rejectMember" parameterType="String">
+		UPDATE MEMBER 
+		SET MEM_STATUS = 'R'
+		WHERE MEM_ID = #{mem_id}
+	</update>
+<!-- 	회원 강퇴 -->
+	<update id="banMember" parameterType="String">
+		UPDATE MEMBER 
+		SET MEM_STATUS = 'B'
+		WHERE MEM_ID = #{mem_id}
+	</update>
+	<!-- 2018-07-24 조문경 추가 이메일 정보 업데이트 -->
+	<update id = "emailupdate" parameterType = "memberVO" >
+		UPDATE MEMBER SET MEM_MAIL = #{mem_mail} WHERE MEM_ID = #{mem_id}
+	</update>
+</mapper>

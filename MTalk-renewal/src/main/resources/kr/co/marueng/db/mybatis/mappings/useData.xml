@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="useData">
+	<select id="selectAllData" resultType="useDataVO">
+		SELECT
+			USE_MEM,
+			(SELECT MEM_NAME FROM MEMBER WHERE MEM_ID = USE_MEM) as USE_MEMNAME,
+			SUM(USE_QTY) as USE_QTY
+		FROM USEDATA
+		GROUP BY USE_MEM
+		ORDER BY USE_MEMNAME
+	</select>
+	<insert id="insertUsedata" parameterType="useDataVO">
+		INSERT INTO USEDATA (
+			USE_MEM,
+			USE_DATE,
+			USE_QTY
+		) VALUES (
+			#{use_mem},
+			SYSDATE(),
+			#{use_qty}
+		)
+	</insert>
+<!-- 	유저만 선택시 -->
+	<select id="selectMemberData" parameterType="String" resultType="memberVO">
+		SELECT 
+		MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL, MEM_PROPIC,
+		MEM_PROTEXT, MEM_TYPE, MEM_STATUS , MEM_DATE,
+		(SELECT SUM(USE_QTY) FROM USEDATA WHERE USE_MEM = MEM_ID ) as USE_DATA 
+		FROM MEMBER
+		WHERE MEM_STATUS = 'Y'
+		AND MEM_ID LIKE CONCAT('%',#{dataMember},'%')
+	</select>
+<!-- 	유저와 연도 선택시 -->
+	<select id="selectMemberYearData" resultType="memberVO">
+		SELECT 
+		MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL, MEM_PROPIC,
+		MEM_PROTEXT, MEM_TYPE, MEM_STATUS , MEM_DATE,
+		(SELECT SUM(USE_QTY) FROM USEDATA WHERE USE_MEM = MEM_ID AND DATE_FORMAT(USE_DATE,'%Y')=#{dataYear}) as USE_DATA 
+		FROM MEMBER
+		WHERE MEM_STATUS = 'Y'
+		AND MEM_ID LIKE CONCAT('%',#{dataMember},'%')
+	</select>
+	<select id="selectYearData" resultType="memberVO">
+		SELECT 
+		MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL, MEM_PROPIC,
+		MEM_PROTEXT, MEM_TYPE, MEM_STATUS , MEM_DATE,
+		(SELECT SUM(USE_QTY) FROM USEDATA WHERE USE_MEM = MEM_ID AND DATE_FORMAT(USE_DATE,'%Y')=#{dataYear} ) as USE_DATA 
+		FROM MEMBER
+		WHERE MEM_STATUS = 'Y'
+	</select>
+	<select id="selectMonthData" resultType="memberVO">
+		SELECT 
+		MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL, MEM_PROPIC,
+		MEM_PROTEXT, MEM_TYPE, MEM_STATUS , MEM_DATE,
+		(SELECT SUM(USE_QTY) FROM USEDATA WHERE USE_MEM = MEM_ID AND DATE_FORMAT(USE_DATE,'%Y')=#{dataYear} AND DATE_FORMAT(USE_DATE,'%m')=#{dataMonth}  ) as USE_DATA 
+		FROM MEMBER
+		WHERE MEM_STATUS = 'Y'
+	</select>
+	<select id="selectMemberMonthData" resultType="memberVO">
+		SELECT 
+		MEM_ID, MEM_PW, MEM_NAME, MEM_MAIL, MEM_PROPIC,
+		MEM_PROTEXT, MEM_TYPE, MEM_STATUS , MEM_DATE,
+		(SELECT SUM(USE_QTY) FROM USEDATA WHERE USE_MEM = MEM_ID AND DATE_FORMAT(USE_DATE,'%Y')=#{dataYear} AND DATE_FORMAT(USE_DATE,'%m')=#{dataMonth}   ) as USE_DATA 
+		FROM MEMBER
+		WHERE MEM_STATUS = 'Y'
+		AND MEM_ID LIKE CONCAT('%',#{dataMember},'%')
+	</select>
+</mapper>

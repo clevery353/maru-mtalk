@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+<!-- [definition name == 논리적인 view name]  -->
+  <definition name="parent" template="/WEB-INF/views/admin_page.jsp">
+  	<put-attribute name="title" value="MTalk Adminpage" />
+  	<!-- 필요한 조각이 있으면 아래에 추가하시면 됩니다. includee_admin 폴더에 만들어주세요 -->
+    <put-attribute name="common-script" value="/WEB-INF/views/includee_admin/common-script.jsp" />
+    <put-attribute name="header" value="/WEB-INF/views/includee_admin/header.jsp" />
+    <put-attribute name="navi" value="/WEB-INF/views/includee_admin/navi.jsp" />
+<!--     <put-attribute name="container" value="/WEB-INF/views/includee_admin/container.jsp" /> -->
+    <put-attribute name="footer" value="/WEB-INF/views/includee_admin/footer.jsp" />
+  </definition>
+  <!-- 아래는 definition예제 -->
+  <definition name="admin/main" extends="parent">
+    <put-attribute name="content" value="/WEB-INF/views/includee_admin/page1.jsp" />
+  </definition>
+  <definition name="admin/notice/*" extends="parent">
+    <put-attribute name="content" value="/WEB-INF/views/notice/{1}.jsp" />
+  </definition>
+   <definition name="admin/data" extends="parent">
+    <put-attribute name="content" value="/WEB-INF/views/includee_admin/page3.jsp" />
+  </definition>
+<!--   위에 데피니션 네임을 admin으로 바꾸고 어드민 컨트롤러에서 반환값 admin_page가 아닌 admin으로 바꾼다음 실행하면된다 -->
+</tiles-definitions>

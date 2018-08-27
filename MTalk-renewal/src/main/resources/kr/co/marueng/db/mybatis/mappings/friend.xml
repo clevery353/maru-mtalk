@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="friend">
+	<select id="selectBookmarkFriendList" parameterType="String" resultType="friendVO">
+		SELECT
+		F.FRI_ID,
+		 F.FRI_FIRSTMEM,
+		 F.FRI_FRIENDMEM,
+		 F.FRI_FRIENDGROUPID,
+		 (SELECT FRIENDGROUP_NAME FROM FRIENDGROUP WHERE FRIENDGROUP_ID = F.FRI_FRIENDGROUPID) as FRI_FRIENDGROUPNAME,
+		 F.FRI_BOOKMARK,
+		 M.MEM_NAME as FRI_FRIENDMEM_NAME,
+		 M.MEM_PROPIC as FRI_FRIENDPROPIC,
+		 M.MEM_PROTEXT as FRI_FRIENDPROTEXT
+		 FROM FRIEND F INNER JOIN MEMBER M ON F.FRI_FRIENDMEM = M.MEM_ID
+		 WHERE F.FRI_FIRSTMEM = #{fri_firstmem}
+		 AND F.FRI_BOOKMARK = 'Y'
+		 AND M.MEM_STATUS = 'Y'
+		 ORDER BY FRI_FRIENDMEM_NAME
+	</select>
+	<select id="selectFriendList" parameterType="String" resultType="friendVO">
+		 SELECT
+		 F.FRI_ID,
+		 F.FRI_FIRSTMEM,
+		 F.FRI_FRIENDMEM,
+		 F.FRI_FRIENDGROUPID,
+		 (SELECT FRIENDGROUP_NAME FROM FRIENDGROUP WHERE FRIENDGROUP_ID = F.FRI_FRIENDGROUPID) as FRI_FRIENDGROUPNAME,
+		 F.FRI_BOOKMARK,
+		 M.MEM_NAME as FRI_FRIENDMEM_NAME,
+		 M.MEM_PROPIC as FRI_FRIENDPROPIC,
+		 M.MEM_PROTEXT as FRI_FRIENDPROTEXT
+		 FROM FRIEND F INNER JOIN MEMBER M ON F.FRI_FRIENDMEM = M.MEM_ID
+		 WHERE F.FRI_FIRSTMEM = #{fri_firstmem}
+		 AND M.MEM_STATUS = 'Y'
+		 ORDER BY FRI_FRIENDMEM_NAME
+	</select>
+	
+<!-- 	친구수락시 각 회원의 친구리스트에 친구 등록 -->
+	<insert id="insertFriendList1" parameterType="friendVO">
+		INSERT INTO FRIEND (
+			FRI_ID,
+			FRI_FIRSTMEM,
+			FRI_FRIENDMEM,
+			FRI_FRIENDGROUPID,
+			FRI_BOOKMARK
+		) VALUES (
+			NEXTVAL(FRIEND_SEQ),
+			#{fri_firstmem},
+			#{fri_friendmem},
+			(SELECT FRIENDGROUP_ID FROM FRIENDGROUP WHERE FRIENDGROUP_MEMBER = #{fri_firstmem} AND FRIENDGROUP_NAME = '기본'),
+			#{fri_bookMark}
+		)
+	</insert>
+	<insert id="insertFriendList2" parameterType="friendVO">
+		INSERT INTO FRIEND (
+			FRI_ID,
+			FRI_FIRSTMEM,
+			FRI_FRIENDMEM,
+			FRI_FRIENDGROUPID,
+			FRI_BOOKMARK
+		) VALUES (
+			NEXTVAL(FRIEND_SEQ),
+			#{fri_friendmem},
+			#{fri_firstmem},
+			(SELECT FRIENDGROUP_ID FROM FRIENDGROUP WHERE FRIENDGROUP_MEMBER = #{fri_friendmem} AND FRIENDGROUP_NAME = '기본'),
+			#{fri_bookMark}
+		)
+	</insert>
+	
+<!-- 	그룹에서 제외시켰을 때 친구를 기본 그룹으로 변경 -->
+	<update id="excludeFriend" parameterType="friendVO">
+		UPDATE FRIEND SET FRI_FRIENDGROUPID = (SELECT FRIENDGROUP_ID FROM FRIENDGROUP WHERE FRIENDGROUP_NAME = '기본' AND FRIENDGROUP_MEMBER = #{fri_firstmem}) 
+		WHERE FRI_FIRSTMEM = #{fri_firstmem}
+		AND FRI_FRIENDMEM = #{fri_friendmem}
+	</update>
+	
+<!-- 	친구 삭제시 해당 두 회원의 친구리스트에서 서로를 삭제 -->
+	<delete id="deleteFriend1" parameterType="friendVO">
+		DELETE FROM FRIEND
+		WHERE FRI_FIRSTMEM = #{fri_firstmem}
+		AND FRI_FRIENDMEM = #{fri_friendmem}
+	</delete>
+	<delete id="deleteFriend2" parameterType="friendVO">
+		DELETE FROM FRIEND
+		WHERE FRI_FIRSTMEM = #{fri_friendmem}
+		AND FRI_FRIENDMEM = #{fri_firstmem}
+	</delete>
+	
+<!-- 	즐겨찾기 추가시 친구의 즐겨찾기 여부를 Y로 변경 -->
+	<update id="addBookmark" parameterType="friendVO">
+		UPDATE FRIEND SET FRI_BOOKMARK = 'Y'
+		WHERE FRI_FIRSTMEM = #{fri_firstmem}
+		AND FRI_FRIENDMEM = #{fri_friendmem}
+	</update>
+	
+<!-- 	즐겨찾기에서 제외 -->
+<!-- 	나중에 위에 추가 메서드랑 하나로 합칠 수 있음 -->
+	<update id="excludeBookmark" parameterType="friendVO">
+		UPDATE FRIEND SET FRI_BOOKMARK = 'N'
+		WHERE FRI_FIRSTMEM = #{fri_firstmem}
+		AND FRI_FRIENDMEM = #{fri_friendmem}
+	</update>
+	
+<!-- 	친구그룹 삭제시 친구를 기본 그룹으로 이동 -->
+	<update id="excludeGroup" parameterType="friendGroupVO">
+		UPDATE FRIEND SET FRI_FRIENDGROUPID = 
+		(SELECT FRIENDGROUP_ID FROM FRIENDGROUP WHERE FRIENDGROUP_NAME = '기본' AND FRIENDGROUP_MEMBER = #{friendGroup_member})
+		WHERE FRI_FRIENDGROUPID = #{friendGroup_id}
+	</update>
+	
+	<update id="moveGroup" parameterType="friendVO">
+		UPDATE FRIEND SET FRI_FRIENDGROUPID = #{fri_friendGroupId}
+		WHERE FRI_FIRSTMEM = #{fri_firstmem}
+		AND FRI_FRIENDMEM = #{fri_friendmem}
+	</update>
+	
+<!-- 	친구신청 전 친구 상태 확인 -->
+	<select id="checkAlreadyFriend" parameterType="relationsVO" resultType="int">
+		SELECT COUNT(FRI_ID)
+		FROM FRIEND
+		WHERE FRI_FIRSTMEM = #{rel_firstMem}
+		AND FRI_FRIENDMEM = #{rel_secondMem}
+	</select>
+	
+		<!-- 서로 친구인지 확인 : 소은추가 0717 -->
+	<select id="isFriend" parameterType="friendVO" resultType="friendVO">
+		SELECT *
+		FROM FRIEND
+		WHERE (FRI_FIRSTMEM = #{fri_firstmem} OR FRI_FRIENDMEM = #{fri_firstmem})
+		AND (FRI_FIRSTMEM = #{fri_friendmem} OR FRI_FRIENDMEM = #{fri_friendmem})
+	</select>
+</mapper>

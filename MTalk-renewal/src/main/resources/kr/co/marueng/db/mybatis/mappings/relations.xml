@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="relations">
+
+<!-- 	친구신청받은목록조회 : 0718 소은수정 -->
+	<select id="selectRelations" parameterType="String" resultType="relationsVO">
+		SELECT REL_FIRSTMEM, REL_SECONDMEM, REL_STATUS, REL_DATE
+		FROM RELATIONS
+		WHERE REL_SECONDMEM = #{rel_secondMem}
+		AND (REL_STATUS = 'W' OR REL_STATUS = 'D')
+	</select>
+
+<!-- 	신청을 받은 사람 입장에서 firstmem이 목록에 뜬 사람 -->
+<!-- 	secondmem이 자기 아이디 -->
+	<update id="updateRelations" parameterType="relationsVO">
+		UPDATE RELATIONS SET REL_STATUS = 'Y' 
+		WHERE REL_FIRSTMEM = #{rel_firstMem}
+		AND REL_SECONDMEM = #{rel_secondMem}
+	</update>
+
+<!-- 	받은 친구 신청을 거절시,친구 수락시, 친구신청테이블에서 삭제 -->
+	<delete id="rejectRelations" parameterType="relationsVO">
+		DELETE 
+		FROM RELATIONS
+		WHERE REL_FIRSTMEM = #{rel_firstMem}
+		AND REL_SECONDMEM = #{rel_secondMem}
+	</delete>
+	
+<!-- 	친구 신청시 -->
+	<insert id="addFriend" parameterType="relationsVO">
+		INSERT INTO RELATIONS(
+			REL_FIRSTMEM,
+			REL_SECONDMEM,
+			REL_STATUS,
+			REL_DATE
+		) VALUES(
+			#{rel_firstMem},
+			#{rel_secondMem},
+			'W',
+			NOW()
+		)
+	</insert>
+	
+<!-- 	친구신청 전 이미 신청을 보냈는지 조회 -->
+	<select id="checkAlreadySend" parameterType="relationsVO" resultType="int">
+		SELECT COUNT(REL_DATE)
+		FROM RELATIONS
+		WHERE REL_FIRSTMEM = #{rel_firstMem}
+		AND REL_SECONDMEM = #{rel_secondMem}
+	</select>
+	
+<!-- 	친구신청을 이미 받았는지 조회 -->
+	<select id="checkAlreadyReceive" parameterType="relationsVO" resultType="int">
+		SELECT COUNT(REL_DATE)
+		FROM RELATIONS
+		WHERE REL_FIRSTMEM = #{rel_secondMem}
+		AND REL_SECONDMEM = #{rel_firstMem}
+	</select>
+		<!-- 아래는 회원탈퇴시 관계삭제 및 상태변경을 위한 쿼리들 : 0718 소은추가 -->
+	<select id="allMemRelations" parameterType="relationsVO" resultType="relationsVO">
+		SELECT REL_FIRSTMEM, REL_SECONDMEM, REL_STATUS, REL_DATE
+		FROM RELATIONS
+		WHERE REL_FIRSTMEM = #{rel_firstMem}
+		OR REL_SECONDMEM = #{rel_firstMem}
+	</select>
+	<update id="updateDelRelations" parameterType="relationsVO">
+		UPDATE RELATIONS SET REL_STATUS = 'D' 
+		WHERE REL_FIRSTMEM = #{rel_firstMem}
+		AND REL_SECONDMEM = #{rel_secondMem}
+	</update>
+</mapper>

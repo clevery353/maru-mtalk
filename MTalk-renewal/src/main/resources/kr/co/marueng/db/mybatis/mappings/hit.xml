@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hit">
+	<insert id="insertSaveAmount" parameterType="int">
+		INSERT INTO HIT VALUES(
+			NEXTVAL(HIT_SEQ),
+			NOW(),
+			#{todayCount}
+		)
+	</insert>
+	<select id="selectSaveAmount" parameterType="String">
+		SELECT HIT_ID FROM HIT
+		WHERE HIT_QTY= 58
+	</select>
+	<select id="selectAllHit" resultType="hitVO">
+		SELECT 
+		DISTINCT(DATE_FORMAT(HIT_DATE,'%Y')) as HIT_YEAR,
+		SUM(HIT_QTY) as HIT_QTY
+		FROM HIT
+		GROUP BY HIT_YEAR ORDER BY HIT_YEAR DESC
+	</select>
+<!-- 	년도 조건 입력시 조회 -->
+	<select id="selectYearHit" parameterType="Map" resultType="hitVO">
+		SELECT
+			DATE_FORMAT(HIT_DATE,'%m') HIT_MONTH,
+			SUM(HIT_QTY) as HIT_QTY
+		FROM HIT
+		WHERE DATE_FORMAT(HIT_DATE,'%Y') = #{hitYear}
+		GROUP BY HIT_MONTH
+	</select>
+<!-- 	월 조건 입력시 조회 -->
+	<select id="selectMonthHit" parameterType="Map" resultType="hitVO">
+		SELECT
+			DATE_FORMAT(HIT_DATE,'%d') HIT_DAY,
+			SUM(HIT_QTY) as HIT_QTY
+		FROM HIT
+		WHERE DATE_FORMAT(HIT_DATE,'%Y') = #{hitYear}
+		AND DATE_FORMAT(HIT_DATE,'%m') = #{hitMonth}
+		GROUP BY HIT_DAY
+	</select>
+
+</mapper>

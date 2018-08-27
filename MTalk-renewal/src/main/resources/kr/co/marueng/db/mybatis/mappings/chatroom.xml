@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chatroom">
+	<insert id="chatroomInsert" parameterType="chatRoomVO" useGeneratedKeys="true">
+		INSERT INTO CHATROOM
+			(  CHATROOM_NAME, MEM_ID  )
+		VALUES
+			( #{chatroom_name}, #{mem_id} )
+		<selectKey resultType="String" keyProperty="chatroom_id" order="AFTER">
+	        SELECT LAST_INSERT_ID()
+	    </selectKey>
+	</insert>
+	<select id="chatroomSelect" parameterType="String" resultType="chatRoomVO">
+		SELECT DISTINCT R.CHATROOM_ID, R.CHATROOM_NAME, 
+			(  SELECT MAX(B.chatbubble_date)
+				FROM CHATBUBBLE B
+				WHERE B.CHATROOM_ID = R.CHATROOM_ID
+			) CHATBUBBLE_DATE
+		FROM CHATMEMBER M JOIN CHATROOM R 
+			ON M.CHATROOM_ID = R.CHATROOM_ID
+		WHERE M.MEM_ID = #{mem_id}
+		ORDER BY CHATBUBBLE_DATE DESC
+	</select>
+	<update id="chatroomRename" parameterType="chatRoomVO">
+		UPDATE chatroom 
+		SET CHATROOM_NAME=#{chatroom_name} WHERE  CHATROOM_ID=#{chatroom_id}
+	</update>
+	<delete id="chatroomDelete" parameterType="String">
+		DELETE FROM CHATROOM
+		WHERE CHATROOM_ID = #{chatroom_id}
+	</delete>
+	
+	<!-- 채팅참여자 검색 : 0718 소은추가 -->
+	<select id="chatroomMemSearch" parameterType="chatSearchVO" resultType="chatRoomVO">
+		SELECT DISTINCT R.CHATROOM_ID, R.CHATROOM_NAME
+		FROM MEMBER M JOIN CHATMEMBER CM
+		ON M.MEM_ID = CM.MEM_ID
+		JOIN CHATROOM R 
+		ON CM.CHATROOM_ID = R.CHATROOM_ID
+		JOIN CHATMEMBER CM2 
+		ON CM2.CHATROOM_ID = R.CHATROOM_ID
+		JOIN MEMBER M2
+		ON CM2.MEM_ID = M2.MEM_ID
+		AND M.MEM_ID = #{mem_id}
+		AND M2.MEM_NAME LIKE CONCAT('%', #{search_txt}, '%')
+	</select>
+	<!-- 	현호추가 2018-07-19 -->
+	<select id="selectAllChatRoom" resultType="chatRoomVO">
+		SELECT 
+			CR.CHATROOM_ID,
+			CR.CHATROOM_NAME,
+			CM.MEM_ID,
+			M.MEM_NAME AS CHATROOM_MEM
+		FROM CHATROOM CR LEFT OUTER JOIN CHATMEMBER CM ON CR.CHATROOM_ID = CM.CHATROOM_ID
+		LEFT OUTER JOIN MEMBER M ON CM.MEM_ID = M.MEM_ID
+	</select>
+	<!--  문경 추가 2018-07-23 -->
+	<update id = "updateroomname" parameterType = "chatRoomVO">
+		UPDATE CHATROOM SET CHATROOM_NAME = #{chatroom_name} WHERE CHATROOM_ID = #{chatroom_id}
+	</update>
+</mapper>
